@@ -194,6 +194,50 @@ void Chip8::emulateCycle() {
             break;
         }
 
+        case 0xD000: { // 0xDXYN: Draw sprite
+            unsigned char x = (opcode & 0x0F00) >> 8;
+            unsigned char y = (opcode & 0x00F0) >> 4;
+            unsigned char height = (opcode & 0x00F);
+
+            unsigned char xPos = V[x];
+            unsigned char yPos = V[y];
+
+            std::cout << "Draw a sprite at (" << (int)xPos << ", " << (int)yPos << ") height " << (int)height << std::endl;
+            
+            V[0xF] = 0; // Reset the collision flag
+
+            // Loop through each row of the sprite
+
+            for(int row = 0;row < height; row++){
+                unsigned char spriteData = memory[I + row];
+
+                // Loop through each bit (pixel) in this row
+                for(int col=0;col<8;col++){
+                    // Check if this pixel is set (reading from left to right)
+                    if((spriteData & (0x80 >> col)) != 0){
+                        // Calculate screen pixel position
+                        int pixelX = (xPos + col) % 64; // Wrap around screen
+                        int pixelY = (yPos + row) % 32;
+
+                        int pixelIndex = pixelX + (pixelY * 64);
+
+                        // Check for collision
+                        if(gfx[pixelIndex] == 1){
+                            V[0xF] = 1; // Collision detected
+                        }
+
+                        // XOR the pixel
+                        gfx[pixelIndex] ^= 1;
+
+                    }
+                }
+            }
+
+            drawFlag = true;
+            pc += 2;
+            break;
+        }
+
         default:
             std::cout << "Unknown opcode: 0x" << std::hex << opcode << std::dec << std::endl;
             break;
