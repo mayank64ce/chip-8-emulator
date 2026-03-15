@@ -1,0 +1,4 @@
+6105    ; Set V1 to 0x05
+7102    ; Add 0x02 to V1 (V1 should now be 0x07)
+A250    ; Set I to 0x250
+1206    ; Jump to 0x206 (infinite loop)
